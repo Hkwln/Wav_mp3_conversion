@@ -1,14 +1,11 @@
 #include "datahandling.h"
+#include <math.h>
 #include <stdint.h>
 #include <stdio.h>
 int main() {
-  uint8_t bit;
-  int32_t bits;
-  struct WAVheader *wavheader;
-  printf("sizeof datastructure:(should be 44 bytes) %zu \n",
-         sizeof(struct WAVheader));
-  printf("uint8_t :%zu\n", sizeof(bit));
-  printf("int32_r: %zu \n", sizeof(bits));
+  double t = 20;
+  double b = log(t);
 
+  printf("calculation of log: %f", b);
   return 0;
 }

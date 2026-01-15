@@ -1,4 +1,8 @@
+# custom ignores:
+*EXERCISE_1.md
+
 # Prerequisites
+
 *.d
 
 # Object files
