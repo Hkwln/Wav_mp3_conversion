@@ -30,6 +30,9 @@ struct WAVheader {
   struct sample_data sample_data;
   long pos;
 };
-
+struct Audio {
+  int left;
+  int right;
+};
 struct WAVheader *getwavheader(char *file);
 void readaudiodata(char *file, struct WAVheader wavheader);

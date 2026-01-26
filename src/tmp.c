@@ -2,10 +2,11 @@
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 int main() {
-  double t = 20;
-  double b = log(t);
-
-  printf("calculation of log: %f", b);
+  size_t size = 100;
+  int16_t *buf = malloc(size);
+  printf("size = %zu\n", size);
+  free(buf);
   return 0;
 }

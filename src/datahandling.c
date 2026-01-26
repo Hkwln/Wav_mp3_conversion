@@ -47,13 +47,33 @@ struct WAVheader *getwavheader(char *file) {
   fclose(WAVfile);
   return wavheader;
 }
-void printbuf(int16_t *buf) {
-  for (int i = 0; i < 100; i++) {
-    if (i % 5 == 0 && i > 4)
-      printf("\n");
-    printf("%#08X \t", buf[i]);
+void printbuf(int16_t *buf, size_t buffsize) {
+  printf("left: \t\t\t\t\t right: \n");
+  for (int i = 0; i < buffsize; i++) {
+    if (i % 2 == 0) {
+      printf("%#08X \t\t\t\t", buf[i]);
+    } else {
+      printf(" %#08X \n", buf[i]);
+    }
   }
   printf("\n");
+}
+// Requires buffer to be the same or get the
+struct Audio calcamplitude(int16_t *buf1, int16_t *buf2,
+                           size_t smallestbuffsize) {
+  int leftamplitude;
+  int rightamplitude;
+  for (int i = 0; i < smallestbuffsize; i++) {
+    if (i % 2 == 0) {
+      leftamplitude += buf1[i] - buf2[i];
+    } else {
+      rightamplitude += buf1[i] - buf2[i];
+    }
+  }
+  struct Audio audio;
+  audio.left = leftamplitude;
+  audio.right = rightamplitude;
+  return audio;
 }
 /* read the first 100 bits and store them in the buffer*/
 void readaudiodata(char *filename, struct WAVheader wavheader) {
@@ -63,22 +83,27 @@ void readaudiodata(char *filename, struct WAVheader wavheader) {
   // FIXME: buffer has to be freed when should i do that? (maybe usage of memory
   // // pool?) NOTICE this applies only if you want to return the buffer,
   // currently it does not
-  int16_t *buf = malloc(50 * sizeof(int16_t));
+  size_t sizebuf = 100;
+  int16_t *buf = malloc(sizebuf);
   fseek(wav, wavheader.pos, SEEK_SET);
   fread(buf, 100, 1, wav);
   fclose(wav);
   printf("these are the first 100 bits of the audio data in hexa:\n");
-  printbuf(buf);
+  printbuf(buf, sizebuf);
   // now encode it and print once again:
-  // FIXME: referece to alaw
-  int16_t *newbuf = malloc(5 * sizeof(int16_t));
+  size_t sizenewbuf = 10;
+  int16_t *newbuf = malloc(10);
   for (int i = 0; i < 10; i++)
     newbuf[i] = alaw(buf[i]);
 
   // TODO: calculate average amplitude:
-  printf("encodet with alaw:");
-  printbuf(newbuf);
+  printf("encodet with alaw:\n");
+  printbuf(newbuf, sizenewbuf);
+  struct Audio amplitude = calcamplitude(buf, newbuf, sizenewbuf);
+  printf("amplitude: \nleft: %d \t\t\t\t right: %d\n", amplitude.left,
+         amplitude.right);
   free(buf);
+  free(newbuf);
 }
 #if 1
 int main() {

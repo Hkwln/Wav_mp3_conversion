@@ -17,7 +17,7 @@ int16_t alaw(uint8_t alaw_byte) {
   return sign ? decode : -decode;
 }
 
-#if 1
+#if 0
 // check if it works:
 int main() {
   uint8_t alaw_byte = 60;
