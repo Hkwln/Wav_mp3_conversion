@@ -1,16 +1,18 @@
 #include "datahandling.h"
+#include "decoding_algorithm.h"
+#include <errno.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 struct WAVheader *getwavheader(char *file) {
   FILE *WAVfile = fopen(file, "rb");
   if (!WAVfile) {
-    printf("Error: Cannot open file\n");
+    printf("%s: %s\n", file, strerror(errno));
     return NULL;
   }
   struct WAVheader *wavheader = malloc(sizeof(struct WAVheader));
-  wavheader->wav = *WAVfile;
   // Read RIFF chunk (12 bytes)
   fread(wavheader->master.FileTypeBlocID, 4, 1, WAVfile);
   fread(&wavheader->master.FileSize, 4, 1, WAVfile);
@@ -40,27 +42,48 @@ struct WAVheader *getwavheader(char *file) {
     }
     fseek(WAVfile, chunk_size, SEEK_CUR);
   }
-
+  long pos = ftell(WAVfile);
+  wavheader->pos = pos;
   fclose(WAVfile);
   return wavheader;
 }
-uint32_t readaudiodata(struct WAVheader wavheader) {
-  /*TODO: read the first 100 bits and store them in the wavheader*/
-  uint32_t bits;
-  // jump to the start of the sound file:
-  uint16_t start = sizeof(wavheader.data_format) +
-                   sizeof(wavheader.sample_data) + sizeof(wavheader.master);
+void printbuf(int16_t *buf) {
   for (int i = 0; i < 100; i++) {
-    // hier muss mit wavheader noch irgendwas mit fread passieren
-    bits = (wavheader.wav >> start) & 1;
+    if (i % 5 == 0 && i > 4)
+      printf("\n");
+    printf("%#08X \t", buf[i]);
   }
+  printf("\n");
+}
+/* read the first 100 bits and store them in the buffer*/
+void readaudiodata(char *filename, struct WAVheader wavheader) {
+  FILE *wav = fopen(filename, "rb"); // b = binary mode
+  // first we have to know it it is a 8 bit or 16 bit audio, first we asume 16
+  // bit.
+  // FIXME: buffer has to be freed when should i do that? (maybe usage of memory
+  // // pool?) NOTICE this applies only if you want to return the buffer,
+  // currently it does not
+  int16_t *buf = malloc(50 * sizeof(int16_t));
+  fseek(wav, wavheader.pos, SEEK_SET);
+  fread(buf, 100, 1, wav);
+  fclose(wav);
+  printf("these are the first 100 bits of the audio data in hexa:\n");
+  printbuf(buf);
+  // now encode it and print once again:
+  // FIXME: referece to alaw
+  int16_t *newbuf = malloc(5 * sizeof(int16_t));
+  for (int i = 0; i < 10; i++)
+    newbuf[i] = alaw(buf[i]);
 
-  return bits;
+  // TODO: calculate average amplitude:
+  printf("encodet with alaw:");
+  printbuf(newbuf);
+  free(buf);
 }
 #if 1
 int main() {
-  struct WAVheader *header =
-      getwavheader("../audiosamples/M1F1-AlawWE-AFsp.wav");
+  char *file = "../audiosamples/M1F1-AlawWE-AFsp.wav";
+  struct WAVheader *header = getwavheader(file);
 
   if (header) {
     printf("\n=== WAV File Header ===\n");
@@ -82,7 +105,7 @@ int main() {
 
     free(header);
   }
-
+  readaudiodata(file, *header);
   return 0;
 }
 #endif

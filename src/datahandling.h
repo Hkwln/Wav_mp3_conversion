@@ -28,8 +28,8 @@ struct WAVheader {
   struct master_riff_chunk master;
   struct data_format data_format;
   struct sample_data sample_data;
-  FILE wav;
+  long pos;
 };
 
 struct WAVheader *getwavheader(char *file);
-uint32_t readaudiodata(struct WAVheader wavheader);
+void readaudiodata(char *file, struct WAVheader wavheader);
