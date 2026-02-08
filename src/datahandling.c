@@ -64,7 +64,8 @@ struct Audio calcamplitude(uint8_t *buf1, int16_t *buf2,
                            size_t smallestbuffsize) {
   // FIXME: This nested loop is O(n^2) and processes data incorrectly
   // TODO: Stereo samples are interleaved: [L0][R0][L1][R1]...
-  // TODO: Loop should be: for(i=0; i<num_samples; i+=2) { left += buf2[i]; right += buf2[i+1]; }
+  // TODO: Loop should be: for(i=0; i<num_samples; i+=2) { left += buf2[i];
+  // right += buf2[i+1]; } only buffer 2? not calculating buffer 1?
   // TODO: Then divide by (num_samples/2) to get average amplitude
   int leftamplitude = 0;
   int rightamplitude = 0;
@@ -92,7 +93,7 @@ struct Audio calcamplitude(uint8_t *buf1, int16_t *buf2,
   return audio;
 }
 /* read the first 100 bits and store them in the buffer*/
-void readaudiodata(char *filename, struct WAVheader wavheader) {
+char *readaudiodata(char *filename, struct WAVheader wavheader) {
   FILE *wav = fopen(filename, "rb"); // b = binary mode
   size_t sizebuf = wavheader.sample_data.DataSize;
 #if 1
@@ -102,32 +103,34 @@ void readaudiodata(char *filename, struct WAVheader wavheader) {
   fclose(wav);
   // printbuf(buf, sizebuf / sizeof(int16_t));
   //  now encode it and print once again:
-  // FIXME: newbuf should allocate sizebuf * sizeof(int16_t), not just sizebuf
-  // TODO: A-law decodes uint8_t (1 byte) -> int16_t (2 bytes), so output is 2x larger
-  int16_t *newbuf = malloc(sizebuf);
-  // FIXME: Loop processes only half the bytes! sizebuf=46986 bytes, but loop runs 23493 times
-  // TODO: Should be: for (int i = 0; i < sizebuf; i++) since each buf[i] is one A-law byte
-  for (int i = 0; i < sizebuf / sizeof(int16_t); i++)
+  // TODO: A-law decodes uint8_t (1 byte) -> int16_t (2 bytes), so output is 2x
+  // larger
+  int16_t *newbuf = malloc(sizebuf * sizeof(int16_t));
+  for (int i = 0; i < sizebuf; i++)
     newbuf[i] = alaw(buf[i]);
 
   //: calculate average amplitude:
   // printf("encodet with alaw:\n");
   // printbuf(newbuf, sizenewbuf);
-  // TODO: calcamplitude receives wrong size - should be number of int16_t samples, not bytes
+  // TODO: calcamplitude receives wrong size - should be number of int16_t
+  // samples, not bytes
   struct Audio amplitude = calcamplitude(buf, newbuf, sizebuf);
   printf("amplitude: \nleft: %d \t\t\t\t right: %d\n", amplitude.left,
          amplitude.right);
   // store the buffer into a raw file:
-  FILE *raw = fopen("data.raw", "wb");
-  // TODO: Should write (sizebuf * sizeof(int16_t)) bytes if you decoded all samples correctly
+  char *file = "data.raw";
+  FILE *raw = fopen(file, "wb");
+  // TODO: Should write (sizebuf * sizeof(int16_t)) bytes if you decoded all
+  // samples correctly
   fwrite(newbuf, sizebuf, 1, raw);
   fclose(raw);
   free(buf);
   free(newbuf);
+  return file;
 #endif
 }
 
-#if 1
+#if 0
 int main() {
   char *file = "../audiosamples/M1F1-AlawWE-AFsp.wav";
   struct WAVheader *header = getwavheader(file);

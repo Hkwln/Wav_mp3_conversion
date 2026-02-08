@@ -35,4 +35,4 @@ struct Audio {
   int right;
 };
 struct WAVheader *getwavheader(char *file);
-void readaudiodata(char *file, struct WAVheader wavheader);
+char *readaudiodata(char *file, struct WAVheader wavheader);

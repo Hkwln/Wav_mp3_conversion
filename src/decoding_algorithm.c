@@ -7,7 +7,6 @@ int16_t alaw(uint8_t alaw_byte) {
   alaw_byte ^= 0x55; // invert even bits
   uint8_t sign = alaw_byte & 0x80;
   uint8_t exponent = (alaw_byte & 0x70) >> 4;
-  // FIXME: hardcoded, should extract bits from the byte: alaw_byte & 0x0F
   uint8_t mantissma = alaw_byte & 0x0F;
   // decode
   if (exponent == 0) {
