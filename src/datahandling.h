@@ -1,6 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include <stdio.h>
+#include <sys/types.h>
 
 struct master_riff_chunk {
   char FileTypeBlocID[4]; // "RIFF"
@@ -30,9 +31,14 @@ struct WAVheader {
   struct sample_data sample_data;
   long pos;
 };
-struct Audio {
+struct amplitude {
   int left;
   int right;
 };
+struct Audio {
+  uint8_t *left;
+  uint8_t *right;
+};
+
 struct WAVheader *getwavheader(char *file);
 char *readaudiodata(char *file, struct WAVheader wavheader);

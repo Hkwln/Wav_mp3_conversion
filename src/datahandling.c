@@ -60,8 +60,8 @@ void printbuf(int16_t *buf, size_t buffsize) {
   printf("\n");
 }
 // Requires buffer to be the same or get the
-struct Audio calcamplitude(uint8_t *buf1, int16_t *buf2,
-                           size_t smallestbuffsize) {
+struct amplitude calcamplitude(uint8_t *buf1, int16_t *buf2,
+                               size_t smallestbuffsize) {
   // FIXME: This nested loop is O(n^2) and processes data incorrectly
   // TODO: Stereo samples are interleaved: [L0][R0][L1][R1]...
   // TODO: Loop should be: for(i=0; i<num_samples; i+=2) { left += buf2[i];
@@ -87,7 +87,7 @@ struct Audio calcamplitude(uint8_t *buf1, int16_t *buf2,
       }
     }
   }
-  struct Audio audio;
+  struct amplitude audio;
   audio.left = leftamplitude;
   audio.right = rightamplitude;
   return audio;
