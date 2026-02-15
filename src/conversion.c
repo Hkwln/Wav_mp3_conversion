@@ -1,14 +1,18 @@
-// Here the actual conversion happens:
-// TODO:
-// - convert audio into 1152 frames
-// - Upsampling from 8khz to 44.1 khz
-// - de interleave stereo
-// - using LAME encoder to encodeit into mp3
+/* Here the actual conversion happens:
+ TODO:
+ - Upsampling from 8khz to 44.1 khz
+ - convert audio into 1152 frames
+  - Process in chunks: Read your raw audio data in blocks of 1152 samples (after
+ upsampling to 44.1kHz). For stereo, that's 1152 samples × 2 channels ×
+ bytes_per_sample.
+     - Handle remainder samples: If your audio length isn't divisible by 1152,
+ pad the last frame with silence (zeros) to reach exactly 1152 samples.
+ - de interleave stereo
+ - using LAME encoder to encodeit into mp3
+*/
 #include "conversion.h"
 #include <stdint.h>
 #include <stdlib.h>
-
-void convert_audio(uint8_t *rawaudio) {}
 
 // input = a buffer of the raw audio data
 uint8_t *upsample(uint8_t *rawaudio) {
@@ -21,6 +25,16 @@ uint8_t *upsample(uint8_t *rawaudio) {
   }
   return upsampled;
 };
+// input upsampled audio from before
+void convert_audio(uint8_t *rawaudio) {
+  int total_samples = audio_length / bytes_per_sample;
+  for (int i = 0; i <= sizeof(rawaudio); i += 1152) {
+    int frame_size = min(1152, total_samples - i);
+    if (sizeof(*rawaudio) % 1152 != 0) {
+      // add 0 at the end
+    }
+  }
+}
 struct Audio deinterleave_stereo(uint8_t *rawaudio) {
   // basically do the same as in
   struct Audio stereo;
